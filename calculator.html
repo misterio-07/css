@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="calcApp">
+<head>
+<meta charset="UTF-8">
+<title>AngularJS Calculator</title>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+<style>
+body{
+    background:#eaeaea;
+    font-family:Segoe UI, Arial;
+}
+
+.calculator{
+    width:320px;
+    margin:50px auto;
+    background:#222;
+    padding:15px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.4);
+}
+
+.display{
+    background:#000;
+    color:#0f0;
+    font-size:28px;
+    padding:15px;
+    text-align:right;
+    border-radius:8px;
+    margin-bottom:12px;
+    min-height:40px;
+    word-wrap:break-word;
+}
+
+.buttons{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    grid-auto-rows:60px;
+    gap:10px;
+}
+
+button{
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    cursor:pointer;
+}
+
+.num{ background:#333; color:#fff; }
+.op{ background:#ff9500; color:#fff; }
+.clear{ background:#d9534f; color:#fff; }
+.back{ background:#6c757d; color:#fff; }
+.sqrt{ background:#17a2b8; color:#fff; }
+
+.equal{
+    background:#28a745;
+    color:#fff;
+    grid-column:span 2;
+}
+
+button:hover{ opacity:0.9; }
+</style>
+</head>
+
+<body ng-controller="CalcController">
+
+<div class="calculator">
+
+    <div class="display">{{ display || '0' }}</div>
+
+    <div class="buttons">
+
+        <!-- Row 1 -->
+        <button class="clear" ng-click="clear()">C</button>
+        <button class="back" ng-click="backspace()">⌫</button>
+        <button class="sqrt" ng-click="squareRoot()">√</button>
+        <button class="op" ng-click="addOperator('/')">÷</button>
+
+        <!-- Row 2 -->
+        <button class="num" ng-click="press('7')">7</button>
+        <button class="num" ng-click="press('8')">8</button>
+        <button class="num" ng-click="press('9')">9</button>
+        <button class="op" ng-click="addOperator('*')">×</button>
+
+        <!-- Row 3 -->
+        <button class="num" ng-click="press('4')">4</button>
+        <button class="num" ng-click="press('5')">5</button>
+        <button class="num" ng-click="press('6')">6</button>
+        <button class="op" ng-click="addOperator('-')">−</button>
+
+        <!-- Row 4 -->
+        <button class="num" ng-click="press('1')">1</button>
+        <button class="num" ng-click="press('2')">2</button>
+        <button class="num" ng-click="press('3')">3</button>
+        <button class="op" ng-click="addOperator('+')">+</button>
+
+        <!-- Row 5 -->
+        <button class="num" ng-click="press('0')">0</button>
+        <button class="num" ng-click="press('.')">.</button>
+        <button class="equal" ng-click="calculate()">=</button>
+
+    </div>
+</div>
+
+<script>
+var app = angular.module("calcApp", []);
+
+app.controller("CalcController", function($scope){
+
+    $scope.display = "";
+    const operators = ['+','-','*','/'];
+
+    $scope.press = function(value){
+
+        if(value === '.'){
+            let parts = $scope.display.split(/[\+\-\*\/]/);
+            let lastPart = parts[parts.length - 1];
+            if(lastPart.includes('.')) return;
+        }
+
+        $scope.display += value;
+    };
+
+    $scope.addOperator = function(op){
+
+        if($scope.display === "") return;
+
+        let lastChar = $scope.display.slice(-1);
+
+        if(operators.includes(lastChar)){
+            $scope.display = $scope.display.slice(0,-1) + op;
+        }else{
+            $scope.display += op;
+        }
+    };
+
+    $scope.squareRoot = function(){
+
+        if($scope.display === ""){
+            $scope.display = "Empty Input";
+            return;
+        }
+
+        try{
+            let value = eval($scope.display);
+
+            if(value < 0){
+                $scope.display = "Invalid Input";
+                return;
+            }
+
+            $scope.display = Math.sqrt(value).toString();
+
+        }catch{
+            $scope.display = "Error";
+        }
+    };
+
+    $scope.backspace = function(){
+        $scope.display = $scope.display.slice(0,-1);
+    };
+
+    $scope.clear = function(){
+        $scope.display = "";
+    };
+
+    $scope.calculate = function(){
+
+        if($scope.display === ""){
+            $scope.display = "Empty Input";
+            return;
+        }
+
+        let lastChar = $scope.display.slice(-1);
+
+        if(operators.includes(lastChar)){
+            $scope.display = "Invalid Expression";
+            return;
+        }
+
+        if(/\/0(?!\d)/.test($scope.display)){
+            $scope.display = "Divide by Zero";
+            return;
+        }
+
+        try{
+            let result = eval($scope.display);
+
+            if(!isFinite(result)){
+                $scope.display = "Math Error";
+            }else{
+                $scope.display = result.toString();
+            }
+
+        }catch{
+            $scope.display = "Syntax Error";
+        }
+    };
+
+});
+</script>
+
+</body>
+</html>
